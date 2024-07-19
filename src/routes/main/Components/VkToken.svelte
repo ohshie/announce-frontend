@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { AuthState } from '$lib/auth';
 	import { tokenReady } from './Stores/stores';
 	export let vkTokenSuccess: boolean;
 
@@ -16,12 +17,13 @@
 
 	async function updateVkToken() {
 		const storedAuth = localStorage.getItem('auth');
+		var auth: AuthState = storedAuth ? JSON.parse(storedAuth) : { token: null, user: null };
+
 		const endpoint = import.meta.env.VITE_API_URL + import.meta.env.VITE_API_UPDATETOKEN;
 
 		const response = await fetch(endpoint, {
 			method: 'POST',
-			mode: 'cors',
-			headers: { Authorization: `Bearer: ${storedAuth}`, 'content-type': 'application/json' },
+			headers: { Authorization: `Bearer ${auth.token}`, 'content-type': 'application/json' },
 			body: JSON.stringify(newVkToken)
 		});
 
