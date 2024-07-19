@@ -1,39 +1,31 @@
-<script>
-    import { tokenReady, rowsReady, vkToken, tableRows } from "./Stores/stores";
+<script lang="ts">
+	import { tokenReady, rowsReady, tableRows } from './Stores/stores';
+	import type { AuthState } from '$lib/auth';
+	import submitData from '$lib/submitData';
 
-    rowsReady.subscribe;
+	rowsReady.subscribe;
 
-    $: buttonText = $tokenReady ? "Создать анонсы" : 'Проверь доступ в вк!' ;
-    $: disabled = !$rowsReady && buttonText != "Создать анонсы";
+	$: buttonText = $tokenReady ? 'Создать анонсы' : 'Проверь доступ в вк!';
+	$: disabled = !$rowsReady && buttonText != 'Создать анонсы';
 
-    async function submitData()
-    {
-        let announces = $tableRows
-        let encodedToken = encodeURIComponent($vkToken);
-        let dataToSend = JSON.stringify({ announces, encodedToken });
-        console.log("Sending data:", dataToSend);
+	async function submit() {
+		const storedAuth = localStorage.getItem('auth');
+		var auth: AuthState = storedAuth ? JSON.parse(storedAuth) : { token: null, user: null };
 
-        const response = await fetch("http://localhost:5000/Announce/SubmitAnnounces/", {
-            method: "POST",
-            mode: "cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({announces, encodedToken})
-        });
-
-        if(response.ok){
-            console.log("ok")
-        }
-    }
+		await submitData(auth, $tableRows);
+	}
 </script>
 
-<button on:click={submitData}
-{disabled} 
-class="disabled:bg-gray-900 bg-green-500 
+<button
+	on:click={submit}
+	{disabled}
+	class="disabled:bg-gray-900 bg-green-500
 p-6
 border-4 border-black
 font-mono font-extrabold
 text-2xl text-black disabled:text-white
 enabled:hover:shadow-[5px_5px_0px_0px_rgba(109,40,217)]
-transition duration-100">
-    {buttonText}
+transition duration-100"
+>
+	{buttonText}
 </button>

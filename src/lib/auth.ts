@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 
-interface AuthState {
+export interface AuthState {
 	token: string | null;
 	user: User | null;
 }
