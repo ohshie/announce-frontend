@@ -1,11 +1,12 @@
 <script lang="ts">
 	import type { AuthState } from '$lib/auth';
 	import { tokenReady } from './Stores/stores';
+
 	export let vkTokenSuccess: boolean;
 
 	let readonly: boolean = false;
 	let disabled: boolean = false;
-	$: newVkToken = '';
+	let newVkToken = '';
 
 	let buttonMessage = 'Проверить доступ к VK';
 
@@ -21,38 +22,48 @@
 
 		const endpoint = import.meta.env.VITE_API_URL + import.meta.env.VITE_API_UPDATETOKEN;
 
-		const response = await fetch(endpoint, {
-			method: 'POST',
-			headers: { Authorization: `Bearer ${auth.token}`, 'content-type': 'application/json' },
-			body: JSON.stringify(newVkToken)
-		});
+		try {
+			const response = await fetch(endpoint, {
+				method: 'POST',
+				headers: { Authorization: `Bearer ${auth.token}`, 'content-type': 'application/json' },
+				body: JSON.stringify(newVkToken)
+			});
 
-		if (response.ok) {
-			disabled = true;
-			readonly = true;
-			tokenReady.set(true);
-			buttonMessage = '👍';
+			if (response.ok) {
+				disabled = true;
+				readonly = true;
+				tokenReady.set(true);
+				buttonMessage = '👍';
+			} else {
+				throw new Error('Failed to update token');
+			}
+		} catch (error) {
+			console.error('Error updating VK token:', error);
 		}
 	}
 </script>
 
 <div class="flex gap-2">
-	<input
-		{readonly}
-		class="border-2 border-black rounded-none
+	<form on:submit|preventDefault={updateVkToken}>
+		<input
+			{readonly}
+			id="vk-token-input"
+			type="text"
+			class="border-2 border-black rounded-none
     focus:outline-none bg-slate-200 focus:bg-slate-300 focus:rounded-none"
-		bind:value={newVkToken}
-	/>
+			bind:value={newVkToken}
+		/>
 
-	<button
-		{disabled}
-		on:click={updateVkToken}
-		class="p-2
+		<button
+			{disabled}
+			type="submit"
+			class="p-2
     border-2 border-black
     bg-green-600
     font-bold
     enabled:hover:shadow-[5px_5px_0px_0px_rgba(109,40,217)]
     text-xs sm:text-sm
     transition duration-100">{buttonMessage}</button
-	>
+		>
+	</form>
 </div>
